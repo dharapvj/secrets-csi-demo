@@ -1,0 +1,30 @@
+# exec into pod and run cat /etc/secret-volume/.secret-file
+# k exec -it secret-dotfiles-pod -- cat /etc/secret-volume/.secret-file
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dotfile-secret
+data:
+  .secret-file: cHJpdmF0ZS1naXQtc2VjcmV0
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-dotfiles-pod
+spec:
+  volumes:
+    - name: secret-volume
+      secret:
+        secretName: dotfile-secret
+  containers:
+    - name: dotfile-test-container
+      image: registry.k8s.io/busybox
+      command:
+        - sh
+        - -c
+        - "while true; do sleep 86400; done"
+      volumeMounts:
+        - name: secret-volume
+          readOnly: true
+          mountPath: "/etc/secret-volume"
