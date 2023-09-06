@@ -1,6 +1,3 @@
-# exec into pod and run cat /etc/secret-volume/.secret-file
-# k exec -it secret-dotfiles-pod -- cat /etc/secret-volume/.secret-file
-
 apiVersion: v1
 kind: Secret
 metadata:
