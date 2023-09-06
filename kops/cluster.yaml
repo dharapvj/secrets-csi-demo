@@ -1,0 +1,164 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: kopsdemo.k8s.local
+spec:
+  # Added for kube2iam to allow assume-role operations.
+  additionalPolicies:
+    control-plane: |
+      [
+        { 
+          "Action": "elasticloadbalancing:modifyloadBalancerAttributes",
+          "Resource": [ "*" ],
+          "Effect": "Allow"
+        }
+      ]
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": ["sts:AssumeRole"],
+          "Resource": ["*"]
+        }
+      ]
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  certManager:
+    enabled: true
+  channel: stable
+  cloudProvider: aws
+  clusterAutoscaler:
+    enabled: true
+    scaleDownUnneededTime: 4m
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-ap-south-1a
+      name: a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-ap-south-1a
+      name: a
+    memoryRequest: 100Mi
+    name: events
+  externalPolicies:
+    node:
+    - arn:aws:iam::064814169464:policy/AllowExternalDNSUpdates
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+    serviceAccountExternalPermissions:
+      - aws:
+          policyARNs:
+          - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+        name: pod-identity-webhook-test
+        namespace: default
+      - aws:
+          policyARNs:
+          - arn:aws:iam::064814169464:policy/nginx-deployment-policy
+        name: sa-secrets-csi-demo
+        namespace: default
+      # - name: my-sa
+      #   namespace: my-ns
+      #   aws:
+      #     inlinePolicy: |-
+      #       [
+      #         {
+      #           "Effect": "Allow",
+      #           "Action": "ec2:Describe*",
+      #           "Resource": "*"
+      #         }
+      #       ]
+  kubeDNS:
+    provider: CoreDNS
+    nodeLocalDNS:
+      enabled: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.23.15
+  metricsServer:
+    enabled: true
+    insecure: true
+  networkCIDR: 172.20.0.0/16
+  networking:
+    calico : {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  podIdentityWebhook:
+    enabled: true
+  serviceAccountIssuerDiscovery:
+    discoveryStore: s3://oidc-test-oozrvxtuaawvucfzwnhnqafnjgncasbg
+    enableAWSOIDCProvider: true
+    additionalAudiences:
+      - sts.amazonaws.com
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: ap-south-1a
+    type: Public
+    zone: ap-south-1a
+  - cidr: 172.20.64.0/19
+    name: ap-south-1b
+    type: Public
+    zone: ap-south-1b
+  - cidr: 172.20.96.0/19
+    name: ap-south-1c
+    type: Public
+    zone: ap-south-1c
+  topology:
+    nodes: private
+
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: kopsdemo.k8s.local
+  name: master-ap-south-1a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221212
+  machineType: t3a.medium
+  #maxPrice: "0.016"
+  maxSize: 1
+  minSize: 1
+  volumeSize: 10
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-ap-south-1a
+  role: Master
+  subnets:
+  - ap-south-1a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: kopsdemo.k8s.local
+  name: nodes
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221212
+  machineType: t3a.large
+  maxPrice: "0.016"
+  maxSize: 10
+  minSize: 1
+  volumeSize: 30
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - ap-south-1a
+  - ap-south-1b
+  - ap-south-1c

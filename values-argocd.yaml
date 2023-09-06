@@ -1,0 +1,34 @@
+crds:
+# -- Install and upgrade CRDs
+  install: true
+global:
+  image:
+    tag: v2.7.3
+  # See https://github.com/argoproj/argo-helm/issues/1984
+  deploymentStrategy:
+    type: RollingUpdate
+repoServer:
+  # custom image to be able to Decrypt the git-crypted files.
+  image:
+    repository: quay.io/kubermatic-labs/argocd-custom
+  volumes:
+  - name: gitcrypt-key
+    secret:
+      secretName: gitcrypt-key
+  volumeMounts:
+  - mountPath: "/git-crypt"
+    name: gitcrypt-key
+dex:
+  enabled: false
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    paths:
+      - /argocd/
+configs:
+  params:
+    server.insecure: true
+    server.basehref: /argocd
+    # -- Used if Argo CD is running behind reverse proxy under subpath different from /
+    server.rootpath: '/argocd'

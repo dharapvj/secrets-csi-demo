@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secrets-store-creds
+  labels:
+    secrets-store.csi.k8s.io/used: "true"
+data:
+  clientid: $CLIENT_ID
+  clientsecret: $CLIENT_SECRET

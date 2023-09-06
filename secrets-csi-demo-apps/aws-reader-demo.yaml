@@ -1,0 +1,62 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: reader-aws
+  labels:
+    app: reader-aws-app
+spec:
+  serviceAccountName: sa-secrets-csi-demo
+  containers:
+  - name: reader
+    image: docker.io/dharapvj/file-reader:1.0
+    env:
+      - name: MESSAGE
+        value: "Welcome to Secrets-CSI Demo - AWS Provider"
+      - name: SECRET_PATH
+        value: "/mnt/secrets-store"
+      - name: SECRET_NAME
+        value: "MySecret"
+    ports:
+      - name: http-port
+        containerPort: 3000
+    volumeMounts:
+    - name: secrets-store-inline
+      mountPath: "/mnt/secrets-store"
+      readOnly: true
+  volumes:
+    - name: secrets-store-inline
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "nginx-deployment-aws-secrets"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reader-aws-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+  selector:
+    app: reader-aws-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: reader-aws-ing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: $1
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /reader-aws(/.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: reader-aws-svc
+                port:
+                  number: 3000
