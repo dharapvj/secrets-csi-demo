@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: gitcrypt-key
+  namespace: argocd
+type: Opaque
+data:
+  git-crypt-key: AEdJVENSWVBUS0VZAAAAAgAAAAAAAAABAAAABAAAAAAAAAADAAAAIN8ujjWgggU141fR4ejawBHX4e8QOYzemN5fZHEXxvToAAAABQAAAEBTImjjXu2w2VhLmC0J0VnusWelC9uE/GURu+ErhYZTht34CCyIYUaS+Cton5z1qNllKiO5OdLSLypWqRWw2RWxAAAAAA==

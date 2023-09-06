@@ -28,8 +28,9 @@ deploy-sealed-secrets-controller:
 	kubectl -n kube-system patch svc sealed-secrets-controller --type='json' -p='[{"op": "remove", "path": "/spec/ports/0/name"}, {"op": "replace", "path": "/spec/ports/0/targetPort", "value":8080}]'
 
 seal-the-secret:
-	kubectl create secret generic select-secret-demo -n default --from-file=./kubeseal-secrets/secret-text.txt --dry-run=client -o yaml | kubeseal -n kube-system -o yaml > ./kubeseal-secrets/sealed-secret.yaml
-
+	kubectl create secret generic sealed-secret-demo -n default --from-file=./kubeseal-secrets/secret-text.txt --dry-run=client -o yaml | kubeseal -n kube-system -o yaml > ./kubeseal-secrets/sealed-secret.yaml
+	kubectl apply -f ./kubeseal-secrets/sealed-secret.yaml
+	
 deploy-external-secrets-operator:
 	helm repo add external-secrets https://charts.external-secrets.io
 	helm install external-secrets external-secrets/external-secrets \

@@ -1,0 +1,54 @@
+# exec into pod and run cat /etc/secret-volume/.secret-file
+# k exec -it secret-dotfiles-pod -- cat /etc/secret-volume/.secret-file
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: reader-sealed-secret
+  labels:
+    app: reader-sealed-secrets-app
+spec:
+  containers:
+  - name: reader
+    image: docker.io/dharapvj/bgcolor-text-demo:1.2
+    env:
+      - name: BGCOLOR
+        value: lightgreen
+      - name: MESSAGE
+        valueFrom:
+          secretKeyRef:
+            name: sealed-secret-demo
+            key: secret-text.txt
+    ports:
+      - name: http-port
+        containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reader-sealed-secrets-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+  selector:
+    app: reader-sealed-secrets-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: reader-sealed-secrets-ing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: $1
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /sealed-secrets(/.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: reader-sealed-secrets-svc
+                port:
+                  number: 3000
