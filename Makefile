@@ -19,7 +19,6 @@ deploy-azure-secret-csi-provider:
 	helm repo add csi-secrets-store-provider-azure https://azure.github.io/secrets-store-csi-driver-provider-azure/charts
 	helm upgrade --install azure-secrets-csi  --namespace kube-system -f secrets-csi-installation/values-azure-secrets-csi-provider.yaml csi-secrets-store-provider-azure/csi-secrets-store-provider-azure
 	envsubst < secrets-csi-installation/azure-service-principal.yaml | kubectl apply -f -
-	kubectl apply -f secrets-csi-installation/azure-secret-provider-classs.yaml
 
 deploy-aws-secrets-csi-provider:
 	kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/deployment/aws-provider-installer.yaml
@@ -38,7 +37,6 @@ deploy-external-secrets-operator:
 
 seal-the-secret:
 	kubectl create secret generic sealed-secret-demo -n default --from-file=./kubeseal-secrets/secret-text.txt --dry-run=client -o yaml | kubeseal -n kube-system -o yaml > ./kubeseal-secrets/sealed-secret.yaml
-	kubectl apply -f ./kubeseal-secrets/sealed-secret.yaml
 	
 deploy-argo:
 	kubectl apply -f ./gitcrypt-key.yaml

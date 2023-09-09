@@ -29,7 +29,7 @@ spec:
         driver: secrets-store.csi.k8s.io
         readOnly: true
         volumeAttributes:
-          secretProviderClass: "nginx-deployment-aws-secrets"
+          secretProviderClass: "aws-secrets-provider-config"
 ---
 apiVersion: v1
 kind: Service

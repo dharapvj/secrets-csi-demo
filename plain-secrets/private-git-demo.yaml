@@ -4,6 +4,7 @@ metadata:
   name: dotfile-secret
 data:
   .secret-file: cHJpdmF0ZS1naXQtc2VjcmV0
+  # base64 encoded value of "private-git-secret"
 ---
 kind: Pod
 apiVersion: v1
