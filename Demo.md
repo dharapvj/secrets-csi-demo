@@ -25,3 +25,4 @@ http://<lb-dns>/reader-aws/
 
 ## Cleanup
 make delete-kops-cluster
+Disable AWS IAM user
